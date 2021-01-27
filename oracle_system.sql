@@ -38,4 +38,8 @@ grant RESOURCE to kh;
 
 grant connect , RESOURCE to kh;
 
-
+--role(권한묶음) 에포함된 권한 확인
+--DATADICTIONARY DB 의 각 객체에 대한 메타정보를 확인할 수있는 READ-ONLY테이블
+select*
+from dba_sys_privs
+where grantee in ('CONNECT','RESOURCE');

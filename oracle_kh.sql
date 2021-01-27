@@ -988,3 +988,321 @@ from employee;
 select max(salary),min(salary),
         max(hire_date),min(hire_date)
 from employee;
+
+--나이 추출시 주의 점
+--현재년도-탄생년도+1 =>한국식나이
+SELECT emp_name,
+    emp_no,
+--substr(emp_no,1,2),         --이부분이문제다. 따로빼서 테스트해본다.
+--extract(year from sysdate) -extract(year from to_date(substr(emp_no,1,2),'yy'))
+--+1 ext,                                 --이부분 yy에대한설명
+--extract(year from to_date(substr(emp_no,1,2),'yy')) extest
+                                                            --rr로바까본다
+--extract(year from sysdate) -extract(year from to_date(substr(emp_no,1,2),'rr'))
+--+1 exrr
+--rr을넣어도 에러가나올수있다.
+--              yy는 현재년도 기준으로 현재세기(2000~2099)
+--              rr은 1950년도 
+
+--extract(year from sysdate)--
+extract(year from sysdate)-decode(substr(emp_no,8,1),'1',1900,'2',1900,200)
++substr(emp_no,1,2))+1 age
+
+
+from employee;
+
+--정리해서다시써본다
+SELECT emp_name,
+    emp_no,
+    extract(year from sysdate)-(decode(substr(emp_no,8,1),'1',1900,'2',1900,2000)
++substr(emp_no,1,2))+1 age
+from employee;
+
+
+--============================================================================
+--DQL2
+--============================================================================
+--group by
+--------------------------------------
+--지정컬럼기준으로 세부적인 그룹핑이 가능하다.
+--group by 구문 없이는 전체를 하나의 그룹으로 취급한다.
+--group by 절에 명시한 컬럼만 select 절에 사용가능하다.
+select dept_code, --emp_name, <=이렇게는쓸수없다. 그룹바이절에명시된 컬럼이아니기떄문이다.
+sum(salary)
+from employee
+group by dept_code;  --일반컬럼 or가공컬럼이 전부 가능.
+--부서별로 (dept_code) 코드 별로 salary값을 더한것이다
+
+
+        --필요한컬럼 추출
+select emp_name,dept_code, salary
+from employee;
+
+--직급별로 평균급여를 구하고싶다.
+select  job_code,
+    trunc(avg(salary),1)
+from employee
+group by job_code
+order by job_code;
+
+--부서코드별 사원수 조회
+--다양한방식으로가능
+select decode(dept_code,null,'인턴',dept_code) 부서코드,count(emp_name) 사원수
+from employee
+group by dept_code
+order by dept_code;
+--      널값을  intern으로 채운다.
+select nvl(dept_code,'intern') 직급코드,
+    count(*) 사원수
+from employee
+group by dept_code;
+
+--부서코드별 사원수 조회/ ,급여평균, 급여합계조회
+select nvl(dept_code,'intern')직급코드,
+       count(*) 사원수,
+       
+       --이렇게는 숫자만
+       trunc(avg(salary))급여평균,
+       trunc(avg(salary),1)급여합계,
+       --아래두가지로도가능
+       to_char(sum(salary),'fml9,999,999,999') sum,
+       to_char(trunc(avg(salary),1),'fml9,999,999,999,0') avg
+from employee
+group by dept_code;
+orderby dept_code;
+
+--성별인원수, 평균 급여조회
+select decode(substr(emp_no,8,1),'1','남','3','남','여') gender,
+count(*) count,
+
+--평균
+to_char(trunc(avg(salary),1),'fml9,999,999,999,0')avg
+from employee
+group by decode(substr(emp_no,8,1),'1','남','3','남','여');
+
+
+--직급코드 J1을 제외하고 ,입사년도별 인원수를 조회해주세요.
+select extract(year from hire_date) 입사년도,
+            count(*) 인원
+from employee
+where job_code != 'J1'
+group by extract(year from hire_date)
+order by 입사년도;
+
+--
+select
+       extract(year from hire_date) 입사년,
+        count(*)사원수
+        from employee
+where dept_code <> 'J1' -- ^= != <>
+group by extract(year from hire_date)
+order by 입사년도;
+
+--선생님 답변
+select extract(year from hire_date) 년도,
+count(*) 인원수
+from employee
+            --<>부정연산자
+where job_code <>'J1'
+group by extract(year from hire_date)
+order by 년도;
+
+--두개이상의 컬럼을 그룹핑 기준으로 제시할수있다.
+select nvl(dept_code,'intern'), job_code,
+    count(*) 
+from employee
+            --부서내에 직급이어떻게되는가.
+group by dept_code,job_code
+order by 1,2;
+
+--부서별 성별 인원수 조회
+
+select nvl(dept_code,'인턴'),
+       decode(substr(emp_no, 8, 1),'1', '남', '3', '남', '여') 성별,
+       count(decode(substr(emp_no, 8, 1),'1','남','3','남', '여')) 인원
+from employee
+group by dept_code, 
+         decode(substr(emp_no, 8, 1),'1','남','3','남', '여')
+order by 1;
+
+--=========================================================================
+--HAVING (filterling 기능)
+--=========================================================================
+--group by 이후 조건절 ,having 단독불가.
+
+--부서별 평균 급여가 300만원 이상인 부서만조회
+
+select dept_code,
+        trunc(avg(salary))avg
+from employee
+group by dept_code
+having avg(salary)>=3000000
+order by 1;
+
+--직급별 인원수가 3명이상인 직급과 인원수 조회
+select job_code, count(*)
+from employee
+group by job_code
+having  count(*) >=3
+order by job_code;
+
+--관리하는 사원이 2명이상인 manager의 아이디와 관리하는 사원수 조회
+select manager_id,
+count(*)
+from employee
+where manager_id is not null
+group by manager_id
+having count(*) >=2
+order by 1;
+
+--이렇게도가능하다.
+select manager_id,
+count(*)
+from employee
+group by manager_id
+having count(manager_id) >=2
+order by 1;
+
+--=========================================================================
+--rollup , cube(col1,cil2....컬럼나열가능) 함수소개
+--=========================================================================
+--group by절에 사용하는 함수
+--그룹핑 결과에 대해 소계(합계)를 제공
+
+--================롤업과 큐브의 차이===============
+--rollup 지정컬럼에 대해 단방향 소계제공
+--cube 지정컬럼에 대해 양방향 소계제공
+--==============================================
+
+--rollup 예제
+--
+select nvl(dept_code,'인턴') 부서,
+count(*) 인원
+from employee
+group by dept_code; 
+--이상황에서 전체 인원이 몇명인지궁금할때 사용한다.
+
+select nvl(dept_code,'인턴') 부서,
+count(*) 인원
+from employee
+group by rollup(dept_code); 
+---->하면 인원수가 최하위에 새로운값으로 종합된다.
+--부서명에 널값이뜬다.
+
+--gouping()
+--실제데이터(0) |집계데이터(1) 컬럼을 구분하는 함수
+        --실제데이터랑 집계 소계데이터의 null을 구분할수없다.(nvl)
+--select nvl(dept_code,'인턴') 부서,
+--소계의 null을 처리하기위해 그루핑함수가필요하다.
+select dept_code,
+--그루핑 함수가 0과 1을 구분한다.  집계데이터인 최하의 null은 그루핑결과1이된다.
+grouping(dept_code),
+count(*) 인원
+from employee
+group by rollup(dept_code); 
+
+--디코드 를이용해서 다음순서를진행해본다.
+select decode(grouping(dept_code),0,nvl(dept_code,'인턴'),1,'합계') dept_code,
+--grouping(dept_code),
+count(*) 인원
+from employee
+group by rollup(dept_code)
+order by 1;
+
+--두개이상의 컬럼을 rollup 이랑 cube에 전달하는경우가다르다.
+
+--예제 ) 부서별 직급 코드별 인원수
+select dept_code 부서,
+job_code 직급,
+count(*) 인원
+from employee
+group by dept_code,job_code
+order by 1;
+
+--rool up
+select 
+decode(grouping(dept_code),0,nvl(dept_code,'인턴'),'합계') 부서,
+decode(grouping(job_code),0,job_code,'소계') 직급,
+
+count(*) 인원
+from employee
+group by rollup(dept_code,job_code)
+order by 1;
+--==?>>이렇게하면 각부서별 그루핑 밑에 해당그루핑의 소계를 맨밑에 달아준다.
+
+--cube를써본다.
+
+select decode(grouping(dept_code),0,nvl(dept_code,'INTERN'), '소계') 부서,
+decode(grouping(job_code),0,job_code,'소계') 직급,
+count(*) 인원
+from employee
+group by cube(dept_code,job_code)
+order by 1,2;
+
+
+/*
+SELECT(5)
+FROM(1)
+WHERE(2)
+GROUP BY(3)
+HAVING(4)
+ORDER BY(6)
+
+*/
+
+--=============================================================================
+--JOIN
+--=============================================================================
+--가로방향 합치기 JOIN 행+행
+--세로방향 합치기 UNION 열+열
+
+--두개 이상의  테이블을 연결해서 하나의 가상테이블(RELATION)을 생성
+--기준컬럼을 가지고 행을 연결한다.
+
+
+--송중기 사원의 부서명을 조회
+select*
+from employee
+where emp_name ='송종기';
+
+select dept_code --'D9'
+from employee
+where emp_name = '송종기';
+
+select dept_title--총무부
+from department
+where dept_id='D9';
+
+--join
+select  D.dept_tilte
+from employee E join department D
+on E.dept_code =D.dept_id;
+where E.emp_name='송종기';
+
+select*from employee;
+select * from department;
+
+--join 종류
+--1.EQUI -JOIN 동등 비교조건(=)에의한 조인 ==>거의대부분이 이킈조인이다.
+--2.NON-EQUI JOIN   동등비교조건이아닌 (between and,in, not in, !=)조인
+
+--join문법
+--1.ANSI표준문법  :모든 DBMS공통 문법
+--2.Vendor(회사이름)별 문법 : DBMS별로 지원하는 문법, 오라클 전용 문법(포함)
+
+--EQUI JOIN종류
+/*
+1. INNER JOIN
+
+2. OUTER JOIN
+
+3. CROSS JOIN
+
+4. SELF JOIN
+
+5. MULTIPLE JOIN
+
+*/
+
+
+

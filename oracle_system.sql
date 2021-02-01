@@ -35,8 +35,8 @@ grant connect to kh;
 grant RESOURCE to kh;
 
 --위두가지는 반복되므로 한번에 할수잇다.
-
 grant connect , RESOURCE to kh;
+
 
 --role(권한묶음) 에포함된 권한 확인
 --DATADICTIONARY DB 의 각 객체에 대한 메타정보를 확인할 수있는 READ-ONLY테이블

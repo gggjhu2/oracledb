@@ -3,17 +3,24 @@
 --============================================
 show user;
 
+--sql문은 대소문자를 구분하지않는다.
+--사용자 계정의 비밀번호,테이블내의 데이터는 대소문자를 구분한다.
+
+
+
 --table sample 생성
 create table sample(
 id number
 );
 --권한이 없기 떄문에 오류가난다. 
+                --부적절한       권한
 --01031. 00000 -  "insufficient privileges"
 --===부적절한 권한이라는 뜻이다. =>create table이라는 권한필요
 --즉 테이블 만들기에대한 권한이없어서 생성불가하다는뜻이다.
 
-grant connect to kh;
+--grant connect to kh; 시스템 계정에서 kh에게 권한을줘야한다.
 
+--현재 계정의 소유테이블 목록 조회
 select * from tab;
 
 --사원 테이블 
@@ -34,24 +41,27 @@ FROM location;
 SELECT
     *
 FROM nation;
--급여등급 테이블
+
+--급여등급 테이블
 select * FROM sal_grade;
 
 --표 TABLE ,ENTITY,RELATION 데이터를 보관하는 객체
---열 COLUMN, FIELD, ATTRIBUTE 세로 ,데이터가 담길형식
---행 ROW ,RECORD ,TUPLE 가로 ,실제 데이터
+                    --속성
+--열 COLUMN, FIELD, ATTRIBUTE 세로 ,데이터가 담길형식 =>세로한줄
+--행 ROW ,RECORD ,TUPLE 가로 ,실제 데이터  =>가로 한줄
 --도메인 DOMAIN 하나의 컬럼에 취할수 있는 값의 그룹 범위
 
 --테이블 명세
 describe employee;
-desc employee; --(desc describe의 약어다)
+desc employee;
+--(desc describe의 약어다)
 
 --컬럼명   널여부    유형  (자료형) 
 --컬럼명 :대소문자구분은없다 언더스코어를 통해서 단어를 구분한다.
---널여부 : NOT NULL 널일수없다 반듯이 값이있어야된다.
---           (빈칸=NULL)   값이없어도된다.
+--널여부 : NOT NULL=>(필수) 널일수없다  반듯이 값이있어야된다.
+--           (빈칸=NULL)=>   값이없어도된다.
 --자료형 : 각타입의 유형이 나뉘어있다.(문자,숫자,날짜로분류되있다.)
---문자(VARCHAR, CHAR ) 숫자(NUM) , 날짜(DATE)
+--문자(VARCHAR, CHAR ) 숫자(NUMBER) , 날짜(DATE)
 
 --============================================================
 --DATA TYPE (자료형) /크게 3가지
@@ -64,42 +74,51 @@ desc employee; --(desc describe의 약어다)
 --------------------------------------------------------------
 --문자형
 --------------------------------------------------------------
---고정형 CHAR(BYTE) (최대 2000byte)
+--고정형 CHAR(BYTE) (최대 2000   byte)
 --      char(10) 'korea' 영소문자는 글자당(10byte넘는건들어갈수없다)
 --                  1byte이므로 실제크기 5byte,고정형 10byte로저장
 --      '안녕' 한글은 글자당 3BYTE(11GEX기준) 이므로
 --      실제크기 6BYTE 고정형 10BYTE저장됨.
-
+ 
 --가변형 VARCHAR2(BYTE)(최대 4000byte)
 -- varchar2(10byte) 'korea' 영소문자는 글자당(10byte넘는건들어갈수없다)
---                  1byte이므로 실제크기 5byte,가변형 6byte로저장 
+--                  1byte이므로 실제크기 5byte,가변형 5byte로저장 
 --      '안녕' 한글은 글자당 3BYTE(11GEX기준) 이므로
 --      실제크기 6BYTE 가변형 6BYTE저장됨.  
             --tb_datatype 테이블 생성
+            --고정형 가변형 모두지정한 크기 이상의 값은 추가할 수 없다.
             
 -- 가변형 long : 최대 2GB 몇글자인지는모르지만 크다.
 -- LOB타입(LARGE OBJECT ) 중의 CLOB(CHARACTER LOB)는 단일컬럼
 --최대 4GB까지지원 가능하다.
+
+
 create table tb_datatype(
 --컬럼명 데이터  자료형  같은식으로 나열.
 --기본값 널여부 등 세부적으로 기입가능
 a char(10),
 b varchar2(10)
 );
+--한번만든테이블은 이름이같게 반복생성할수없다.
+
 
 --table조회
 --select * *는 모든 컬럼
                 --테이블명
-select *from tb_datatype;
+select * from tb_datatype;
+SELECT A FROM TB_DATATYPE;
+SELECT B FROM TB_DATATYPE;
 
 
---1행추가
+--1행추가 ->행추가는 여러번 실행시 계속추가하계된다.
 insert into tb_datatype
-values('hello','hello2');
+values('hello','hello33');
+
+select *from tb_datatype;
 
 --2행추가 
 insert into tb_datatype
-values('안녕','안녕2');
+values('안녕','안녕23');
 -- 가로줄이 추가되고있다.
 --확인
 select *from tb_datatype;
@@ -111,16 +130,14 @@ values('에브리바디','안녕2');
 --"KH"."TB_DATATYPE"."A" (actual: 15, maximum: 10)
 --사용자. 테이블명    . 컬럼명    지금 사이즈  한계사이즈
 
+
 --데이터가 변경(insert ,update ,delete)되는 경우, 메모리상에 먼저처리
 --실제 적용안됨
 --실제 데이타 베이스에 commit을통해 database에 적용해야한다.
-
-
-
 commit;
 
---langthb(컬럼명): number -저장된 데이터의 실제크기를 리턴
 
+--langthb(컬럼명): number -저장된 데이터의 실제크기를 리턴
 select a ,lengthb(a),b,lengthb(b)
 from tb_datatype;
 
@@ -138,22 +155,25 @@ from tb_datatype;
 값: 1234.567
 ===============
 NUMBER   1234.567 제한없이 처리가능(숫자라면)
-NUMBER(7)   ==>12345만된다.  --반올림
-    -7번째자리(7,0)과같다.
+NUMBER(7)   ==>1235만된다.  --반올림
+    --7번째자리(7,0)과같다.
 NUMBER(7,1)   ==>1234.6  --자동 반올림된다.
 NUMBER(7,-2)  ===> 1200 --반올림  
 
 */
 
 create table tb_datatype_number(
+ --컬럼생성
  a number,
  b number(7),
  c number(7,1),
  d number(7,2)
  );
  
+ 
  SELECT * FROM tb_datatype_number;
 
+--값대입
 insert into tb_datatype_number
 values('1234.567','1234.567','1234.567','1234.567');
 SELECT*FROM tb_datatype_number;
@@ -165,6 +185,7 @@ insert into tb_datatype_number
 values('1234564654564.578978967','1234.567','1234.567','1234.5689897');
 --지정한 크기보다 큰숫자
 
+--커밋으로 저장을한다.
 commit;
 --들어간 값이 지워진다. ==>마지막 commit 시점이후 변경사항은 취소된다.
 rollback;
@@ -177,22 +198,30 @@ rollback;
 --timestamp 기본년원일 시부초에 밀리초와 지역대까지저장가능
 
 create table tb_datatype_date(
+--a,b 컬럼만들기. 해당 컬럼의 이름 date, timestamp
 a date,
 b timestamp
 );
 
+select *from tb_Datatype_date;
 
-select to_char(a,'yyy/mm/dd hh24:mi:ss'),b
+
+--  TO_CHAR 날짜/숫자를 문자열로 표현하는방법이다.
+-- A컬럼의 년원일 출력되던걸  시분초정보까지 표현
+select to_char(a,'yyy/mm/dd hh24:mi:ss')투챠이용시분초 ,
+b 그냥시스데이타
  from tb_datatype_date;
 
+
 insert into tb_datatype_date
+        --년월일만  / 년월일 시분초 까지 표현가능.
 values(sysdate,systimestamp);
 
---날짜형 - 날짜형 =숫자(1)<==하루
 
-select to_char(a,'yyy/mm/dd hh24:mi:ss'), to_char
-(a-1,'yyy/mm/dd hh24:mi:ss'), to_char
-(a+1,'yyy/mm/dd hh24:mi:ss'),
+--날짜형 - 날짜형 =숫자(1)<==하루
+select to_char(a,'yyy/mm/dd hh24:mi:ss') 투챠이용데이터타입, to_char
+(a-1,'yyy/mm/dd hh24:mi:ss') 하루를뺸날짜, to_char
+(a+1,'yyy/mm/dd hh24:mi:ss') 하루를더한날짜,
 b
  from tb_datatype_date;
 
@@ -200,63 +229,80 @@ insert into tb_datatype_date
 values(sysdate,systimestamp);
 
 --날짜형 +-숫자(1=하루) =날짜형
-select sysdate -a
+select sysdate -a  --0.009일차이가난다.
 from tb_datatype_date;
 
 --to date 문자열을 날짜형으로 변환하는 함수 
-select to_date('2021/01/24')-a
+                --이날짜 까지의 남은시간. 단위는 일이다.
+select to_date('2021/02/03')-a
 from tb_datatype_date;
 
 --dual 가상 테이블
-select(sysdate+1) - sysdate
+select (sysdate+1) -sysdate
 from dual;
 
 --====================
---DQL
+--DQL (DML 범주안에있는범주다 DML이라고 불러도된다)
 --====================
 --DATA QUERY LANGUAGE 데이터조회(검색)을 위한언어
---SELECT
---쿼리 조회 결과를 RESULTsET이라고한다. (결과집합),0행이상을포함한다.
---FROM 절에 조회하고자 하는 테이블 명시.
---WHERE 절에의해 특정행을 FILTERING 가능
+--SELECT(5)
+--쿼리 조회 결과를 resultset이라고한다. (결과집합),0행이상을포함한다.
+--FROM 절에 조회하고자 하는 테이블 명시.(1)
+
+--WHERE 절에의해 특정행을 FILTERING 가능(2)
 --SELECT 절에의해 컬럼 FILTERING  또는 추가가능
---ORDER BY 절에 의해서 행을 정렬할 수 있다..
+
+--(3) GROUP BY
+--(4) HAVING
+
+--ORDER BY 절에 의해서 행을 정렬할 수 있다..(마지막순번6)
 
 /*
-======================너무너무중요한부분
-구조
-SELECT 컬럼명 (5) =>필수
-FROM 테이블명(1)   =>필수
-WHERE 조건절 (2)   =>선택
-GROUP BY 그룹기준컬럼(3)=>선택
-HAVING  그룹조건절(4)    =>선택
-ORDER BY 정렬기준 컬럼(6)=>선택
---===================너무너무중요한부분
+======================너무너무중요한부분******************
+구조 순서 2,3,4,5,1,6으로외우면편하다 
+SELECT 컬럼명 (5)            =>필수
+FROM 테이블명(1)              =>필수
+WHERE 조건절 (2)             =>선택
+GROUP BY 그룹기준컬럼(3)      =>선택
+HAVING  그룹조건절(4)        =>선택
+ORDER BY 정렬기준 컬럼(6)     =>선택
+--===================너무너무중요한부분****************
 */
+
+
+--=========================================================================
+--첫날 실습문제 마무리
+--=========================================================================
 select*
 from employee
-where dept_code ='D9' --데이터는 대소문자 구분
-order by emp_name asc; --오름차순
+where dept_code ='D9' --데이터는 대소문자 구분 ->부서코드가 D9인부서 대소문자구분
+order by emp_name asc; --오름차순 ->사전등재순으로  DEASC
 
 --문제 1 job테이블에서 job_name 컬럼정보만 출력
 select *
 from job;
 
+SELECT JOB_NAME 잡네임
+FROM JOB;
+
 --문제 2. department 테이블에서 모든 컬럼을 출력
-select dept_id,
-dept_title,
-location_id
+select dept_id 부서아이디,
+dept_title 부서명,
+location_id 지역아이디
 from department;
+
+
 --select * 도 가능
+SELECT*
 from department;
+
 
 --문제 3. employee테이블에서 이름 ,이메일 ,전화번호 ,입사일을 출력
-select emp_name,
-email,
-phone,
-hire_date
+select emp_name 이름,
+email 이메일,
+phone 전화번호,
+hire_date 입사일
 from employee ;
-
 
 
 --문제 4. employee 테이블에서 급여가 250만원 이상인 사원의 이름과 급여를출력
@@ -269,47 +315,67 @@ where salary >=2500000 ;
 select *
 from employee
 where salary >=3500000 and job_code ='J3';
---참고, 조건문에 && 나 ||는 사용하지않는다. AND 나 OR사용가능
+--(참고, 조건문에 && 나 ||는 사용하지않는다. AND 나 OR사용가능)
 
 
 --문제 6.employee테이블에서 현재 근무중인 사원을 이름 오름차순으로 정렬해서 출력.
-
+SELECT QUIT_YN 퇴사유무
+FROM EMPLOYEE
+;
+-->  웨어 오더바이로 조건을걸어준다.
 select*
 from employee
-where quit_yn = 'N'
-order by emp_name;
+where quit_yn = 'N'  -->n인사원중에
+order by emp_name;   -->이름순으로 정렬
 
 --order by emp_name desc ; =>내림차순
 --order by emp_name asce ; =>오름차순
 
+--=========================================================================
+--첫날 실습문제 마무리
+--=========================================================================
+
+
+
 --============================================================
 --SELECT 
 --==============================================================
-
+--select 에쓸수잇는것들.
 --TABLE 의 존재하는 컬럼
 --카상컬럼(산술연산)
 --임의의 LITERAL(값)
 --각컬럼은 별칭(alias)를 가질 수 있다.
---as는 생략가능
+--alias는 생략가능 "alias" , alias 로사용가능
 --" " 생략가능
 --예외 생략불가능한 경우
 --=> 별칭에 공백 , 특수문자나 숫자로시작하는경우
 --쌍따옴표 필수
+            -->as생략가능 " " 생략가능
 select emp_name as "사원명"
 ,phone "전화번호",
 salary 급여,
 salary*12 "1년급여",
+--임의의 값 임의의 컬럼이름 자유롭게 가능
 123 "123",
-'안녕' "인사"
+'안녕' "인사",
+'임의의값' 임의값별칭
+--숫자로시작하는 컬럼명은 ""를씌워줘야한다.
 from employee;
 
-
---실급여 구하기 : salary +(salary +bounus)
-select emp_name,
-salary,
-nvl(bonus,0),
+                                --%로되있다.
+--실급여 구하기 : salary +(salary *bounus)
+select emp_name 이름,
+salary 급여,
+bonus 보너스,
+nvl(bonus,0) nvl보너스  ,
+salary + (salary *bonus) 실급여nvl없이,
+            --> 널값이있는 항목은 계산이안된다.
 salary + (salary * nvl(bonus,0)) "실급여"
+                    -->컬럼값 bonus가 널값이면 bonus column에 0을 기입하고 column값을
+                    -->리턴한다.
 from employee;
+
+
 --  NULL값과는 산술연산은 할수없다 그결과는 무조건 NULL이다.
 --null%1 나머지 산술연산은 없다.
 --select null+1,
@@ -318,32 +384,36 @@ from employee;
 --null/1
 --from dual; --1행짜리 가상테이블
 
+
+--====================NULL 처리함수 (NVL함수)=================================
 --nvl( col, null 값일때) null처리 함수
 --col의 값이 null이 아니면 col값 리턴
 --col의 값이 null이면  null을 리턴
-
+--=========================================================================
 select bonus,
 nvl(bonus, 0 ) null처리후
 from employee;
+
 
 --distinct 중복 제거용 키워드
 --select 절 에 단한번 사용가능하다.
 --예)직급 코드를 중복없이 출력
 select distinct job_code
 --중복된값은 날라간다.
-
 from employee;
+
 
 --여러컬럼사용시 컬럼을 묶어서 보유한 값으로 취급 
-select distinct job_code, dept_code
+select distinct job_code 잡코드, dept_code 부서코드
 from employee;
+
+
 
 --문자 연결 연산자 ||
 -- +는 산술연산자만 가능하다.
-select '안녕' ||'하세요'||1234
+select '안녕' ||'하세요'||1234 
 from dual;
-
-select emp_name ||'('||phone||')'
+select emp_name || '(' || phone || ')' || '(' || job_code ||')'
 from employee;
 
 --=================================================
@@ -358,126 +428,177 @@ from employee;
     나머지는 기존 산술연산자와동일하다.
   +아예 처음보는연산자도 존재
   --=======================================
-  between....and...  범위연산
-  like, not like        문자패턴연산
-  is null , is not null 널여부
-  in, not in        값목록에 포함여부를 물어본다.
-  같은 sql만의 연산자가있다.
+  between....and...             범위연산
+  like, not like                문자패턴연산
+  is null , is not null         널여부
+  in, not in                    값목록에 포함여부를 물어본다.
+  위와같이 sql만의 연산자가있다.
   and
   or 
   not도존재
 --==========================================
 */
 --==사용해본다.
-select*
+select *
 from employee
 where dept_code!='D6';
+
+--dpet_cde'D6이아닌사원' 사원명 부서코드
+select emp_name 이름, dept_code 부서코드
+from employee
+where dept_code!='D6';
+
+--부서코드 d6아닌 사원 중복제거 오더바이로  DEPT_CODE 사전등재순으로정렬
+select distinct emp_name 이름, dept_code 부서코드
+from employee
+where dept_code!='D6'
+order by dept_code;
+
+--부서코드가 D6인사원 사전등재순 정렬
+select distinct emp_name 이름, dept_code 부서코드
+from employee
+where dept_code='D6'
+order by dept_code;
 
 --급여가 2000000 원보다 많은 사원 조회
 select emp_name,salary
 from employee
-where salary > 2000000;
+where salary > 2000000
+--RMQDU 내림차순으로정렬 큰것부터나온다.
+ORDER BY SALARY DESC;
 
 --부서코드가 D6이거나 D9인 사원조회
 select emp_name,dept_code
 from employee
 where dept_code ='D6' or dept_code ='D9';
 
+
 --날짜형 비교가능
 --과거가 작다
-select emp_name, hire_date
+select emp_name 이름, hire_date 입사날
 from employee
-where hire_date <'2000/01/01'; --날짜형식의 문자열은 자동으로 날짜형으로 형변환
+            --하이어데이트가 2000/01/01 보다 이전인 사원
+where hire_date < '2000/01/01'; --날짜형식의 문자열은 자동으로 날짜형으로 형변환
+
 
 --20년이상 근무한 사원 조회 :
 --날짜형 -날짜형 =숫자(1=하루)
 --날짜형-숫자(1=하루)=날짜형
 
-select emp_name , hire_date ,quit_yn
-
+select emp_name 존함 , hire_date 입사일 ,quit_yn 퇴사유무
 from employee
-where  quit_yn='N'
-and to_date('2021/01/22')-hire_date>365*20;
+            --퇴사하지않은사람이면서 근무기간이 365*20<==20년보다 큰 사람
+where  quit_yn='N' and to_date ('2021/01/22') - hire_date > 365*20;
+
 
 --범위 연산
 --급여가 200만원 이상 400만원 이하인 사원 조회(사원명, 급여)
-select emp_name,
-salary
+select emp_name 이름,
+salary 급여
 from employee
---where  salary >=2000000 and salary<=4000000;
+where  salary >=2000000 and salary<=4000000; --<-이렇게도안된다
 
-select emp_name,
-salary
+
+select emp_name 이름,
+salary 급여200이상400이하
 from employee
-where salary  between 2000000 and 4000000; 
---포함 이상 이하 관계
+where salary  between 2000000 and 4000000
+ORDER BY SALARY DESC;
+--포함 이상 이하 관계 (200만원도 해당 400만원도해당)
+
+
 
 --입사일이 1990/01/01 ~2001/01/01 인 사원조회(사원명,입사일)
-select emp_name,hire_date
+select emp_name 이름,hire_date 입사일
 from employee
-where quit_yn='N'and
-hire_date >= '1990/01/01' and hire_date <='2001/01/01';
+            --재직중
+where quit_yn='N'and hire_date >= '1990/01/01' and hire_date <'2001/01/01'
+ORDER BY HIRE_DATE;
 
+
+--============================================================================
 --like , not like
 --문자열 패턴 비교 연산
 
 --wildcard:패턴의미를 가지는 특수문자 로 두가지가있다.
---_  => 아무문자 한글짜
---%  => 아무문자 0개이상
-select emp_name
+-- _  => 아무문자 한글짜
+-- %  => 아무문자 0개이상
+select emp_name 전으로시작하는
 from employee
 where emp_name like '전%' ; --전으로 시작하는 문자가 존재하는가
 --전씨로시작하는건다가능하지만 전이뒤로오는건안된다 파전(x)
 
-select emp_name
+
+select emp_name 전씨성
 from employee
+                -- 전 뒤에 _ _ 두글자가존재하는가
 where emp_name like '전__' ; --_두개  전으로시작 , 2개의 문자가 존재하는가
 --전형동 전전전 , (ㅇ)
 --전,전진,파전,전당포아저씨(x)
 
---이름에가운데 글자가 '옹' 인 사원 조회
+
+--이름에가운데 글자가 '옹' 인 사원 조회 이름은 세글자
 select emp_name
 from employee
 where emp_name like'_옹_';
 
---이름에 '이'rk emfdjrksms tkdnjswhghl
+--이름에 '이'가 있고 두글자가 있는가
 select emp_name
 from employee
-where emp_name like'%이%';
+--where emp_name like'%이%';
+WHERE EMP_NAME LIKE '%이%';
 
+
+--============================================================================
+--ESCAPE 문 활용 
+        --사용하고싶은 ESCAPE 문자는 우리가정의할수있다.
+--============================================================================
 --email 컬럼값의 '_'이전 글자가 3글자인 이메일을 조회
 select email
 from employee
+
 --where email like'___%'; --4글자 이후 0개이상의 문자열이 뒤따르는가를검사한것이다.
 -->escape 문자로 해야된다.
-where email like '___\_%' escape'\'; --어떤글짜 3글자가나오고 언더스코어가잇는가.
+where email like '___\_%' escape'\'; --어떤글짜 3글자가나오고 언더스코어수에 0개이상의
+-- 문자열이있는가.가잇는가.
 --임의의 escape문자를 등록가능 하지만 데이터값안의 존재하지않는 기호로사용할것
-select emp_name , dept_code
-from employee
-where dept_code ='D6' or dept_code ='D8';
 
+--IN ,NOT IN 값목록에 포함여부
+--부서코드가 D6 또는 D8인사원조회
+SELECT EMP_NAME 이름 , DEPT_CODE 부서코드
+FROM EMPLOYEE
+WHERE DEPT_CODE ='D6' OR DEPT_CODE ='D8';
+-->위문장을 아래 IN NOT IN 을사용해서 표현가능하다.
 select emp_name , dept_code
-from employee       --이안에 갯수제한없이 원하는만큼사용가능
+from employee       
+                    --이안에 갯수제한없이 원하는만큼사용가능
 where dept_code in ('D6','D8','D1');
+
 
 select emp_name , dept_code
 from employee       --이안에 갯수제한없이 원하는만큼사용가능
 where dept_code NOT in ('D6','D8','D1');
                 --NOT IN  을하면 해당값이없는 사람을 추출
-                
+
+--D6 나 D8이아닌 사원
 select emp_name , dept_code
 from employee       
 where dept_code !='D6' AND dept_code !='D8';
 
+-->NOT IN 을이용해서 쉽게가능하다.
+SELECT EMP_NAME , DEPT_CODE
+FROM EMPLOYEE
+WHERE DEPT_CODE NOT IN ('D6','D8');
+
+
 --인턴 사원 조회
 select emp_name, dept_code
 from employee
-where dept_code =null;
---null 값은 산술연산 비교연산 모두불가
+where dept_code = null;---->null 값은 산술연산 비교연산 모두불가 결과가안나온다.
 --null은 is not null , in null :전용 비교연산자가있다.
 select emp_name, dept_code
 from employee
-where dept_code is null;
+where dept_code is null; -->널은 IS NULL IS NOT NULL 로만 구분가능
 
 --D6, D8 부서원이 아닌사원 조회 (인턴사원 포함)
 select emp_name, dept_code
@@ -485,9 +606,15 @@ from employee
 where dept_code not in('D6','D8') or  dept_code is null;
 
 --nvl버전 
-select emp_name , nvl(dept_code,'인턴')dept_code
+                    --DEPT코드가 NULL이면 '인턴'값을 대입
+select emp_name , nvl(dept_code,'인턴')dept_code -->보여지는부분이여기서결정되는것이다.
 from employee
-where nvl(dept_code, 'D0') not in('D6','D8');
+       --인턴사원 포함 NVL문        --D6,D8아닌사원
+where nvl(dept_code, 'D0') not in('D6','D8')  -->비교하려고 NVL을 우회적으로사용.
+        --만약 DEPT_CODE가 NULL 이면 'D0'을 넣어라.
+            --가상커럶이다
+ORDER BY DEPT_CODE;
+
 
 --============================================================
 --ORDER BY
@@ -502,25 +629,37 @@ where nvl(dept_code, 'D0') not in('D6','D8');
 --desc내림차순
 --복수개의 컬럼을 차례로 정렬할수 있다.
 
+--공식 문서에의하면 정렬 ORDER BY절이없으면 정확한 정렬값을보장할수없다.
+--오더바이절이없어도 정렬되어보일뿐 상황에따라 값이바뀔수있다.
 SELECT *
 FROM employee
 order by emp_id asc; --desc; 는내림차순이다.
 
-select emp_id , emp_name , dept_code ,job_code, hire_date
+select emp_id 사번 , emp_name 이름 , dept_code 부서명 ,job_code 직급, hire_date
 from employee
-order by dept_code , emp_name;
+        --DEPR CODE순으로 먼저 정렬하고 그다음에 EMP_NAME 을 정렬한다.
+order by dept_code , emp_name ;
 
---alias 사용가능
+--급여 내림차순
+SELECT EMP_NAME, SALARY
+FROM EMPLOYEE
+ORDER BY SALARY DESC;
+
+--alias 사용가능  ORDER BY는 컬럼명말고 컬럼별칭으로도 정렬을할수있다.
 select emp_id 사번,
 emp_name 사원명
 from employee
 order by 사원명;
+
+
 --1부터 시작하는 컬럼순서 사용가능.
-select*
+select EMP_ID ,EMP_NAME,EMAIL
 from employee
-order by 9 desc;--(컬럼순서를 왼쪽부터 1~이런식으로 매겨진다 해당번수의컬럼을선택가능)
+order by 1 desc;--(컬럼순서를 왼쪽부터 1~이런식으로 매겨진다 해당번수의컬럼을선택가능)
                         --그러나 그렇게 크게 추천하는방식은아니다.
                             --selec의 컬럼수가 달라지면 9번째자리의 값이바뀌기떄문이다.
+ 
+ 
  
  --=====================================================================
  --BUILT -IN FUNCTION
@@ -540,29 +679,39 @@ order by 9 desc;--(컬럼순서를 왼쪽부터 1~이런식으로 매겨진다 �
 --=============================================================================
 --A.문자처리 함수
 --==============================================================================
+
+--LENGTH 글자수
 SELECT EMP_NAME ,email
 FROM EMPLOYEE
+--웨어절에서도 사용가능
 where length(email)<15;
 
---lengthb(col)
+
+--lengthb(col) 글자의 총 바이트수
 --값의 byte수 리턴
-select emp_name , lengthb(emp_name),
-email,lengthb(email)
+select emp_name 이름 , lengthb(emp_name)이름바이트,
+email 이메일,lengthb(email) 이메일바이트
 from employee;
 
-        --문자열--찾을것 --STARTPOTITION시작지점, OCCURENCE발생횟수.
+ 
+       --문자열--찾을것 --STARTPOTITION시작지점, OCCURENCE발생횟수.
 --instr(STRING,SEARCH,[POSITION,[OCCURENCE] ])
 --STRING 에서 SEARCH 가 위치한 INDEX 를 반환.
 --STARTPOSITION 검색시작위치
 --OCCURENCE 출현순서
 --ORACLE 에서는 1-BASED INDEX. 1부터 시작한다.
-SELECT INSTR('KH정보교육원 국가정보원 정보문화사','정보'),--3
-INSTR('KH정보교육원 국가정보원 정보문화사','안녕'),--0값 없음
-INSTR('KH정보교육원 국가정보원 ','정보',5),--11
-INSTR('KH정보교육원 국가정보원 정보문화사 ','정보',1,3), --15
-INSTR('KH정보교육원 국가정보원 정보문화사 ','정보',-1) --11
+SELECT INSTR('KH정보교육원 국가정보원 정보문화사','정보') 정보위치,--3번째
+INSTR('KH정보교육원 국가정보원 정보문화사','안녕')안녕위치,--0값 없음
+            --정보를 5번쨰인덱스부터 찾아서 정보가 나오는 첫글자인덱스값이 11이다.
+INSTR('KH정보교육원 국가정보원 ','정보',5) 다섯글후정보위치,--11
+            --1번지부터 정보를검색하지만 정보 정보 정보 를 찾아줘
+INSTR('KH정보교육원 국가정보원 정보문화사 ','정보',1,3) 정보3번쨰, --15
+            -- 마이너스는 뒤에서부터찾는다.
+INSTR('KH정보교육원 국가정보원 정보문화사 ','정보',-1) 정보뒤에서부터 --11
                                     --11 STARTPOSITION이 음수면 뒤에서부터검색
 FROM DUAL;
+
+
 
 --email 컬럼값중 '@' 의 위치는 ?(이메일,위치인덱스)
 select email, instr(email,'@')
@@ -1305,4 +1454,30 @@ select * from department;
 */
 
 
+select *
+from employee;
 
+select emp_id, emp_name
+from employee 
+where emp_id>=220;
+
+select emp_id, emp_name 
+from employee 
+where emp_id >210 and emp_id <220  
+order by emp_id desc;
+
+select * from employee 
+OFFSET 1 ROWS;
+
+ select * from employee
+            OFFSET 201 ROWS;
+
+SELECT EMP_ID FROM EMPLOYEE;
+
+SELECT * FROM EMPLOYEE
+OFFSET 15 ROWS
+FETCH NEXT 1;
+
+select * from employee 
+order by emp_id
+offset 2 rows;

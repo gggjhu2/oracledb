@@ -439,20 +439,25 @@ from employee;
 --==========================================
 */
 --==사용해본다.
+
+--부서코드가 D6인 사원조회
 select *
 from employee
-where dept_code!='D6';
+where dept_code='D6';
+
 
 --dpet_cde'D6이아닌사원' 사원명 부서코드
 select emp_name 이름, dept_code 부서코드
 from employee
 where dept_code!='D6';
 
+
 --부서코드 d6아닌 사원 중복제거 오더바이로  DEPT_CODE 사전등재순으로정렬
-select distinct emp_name 이름, dept_code 부서코드
+select distinct  emp_name 이름,dept_code 부서코드
 from employee
 where dept_code!='D6'
 order by dept_code;
+--질문 디스팅스 했는데 부서 중복은 사라지지않는다 부서중복을사라지게하려면?
 
 --부서코드가 D6인사원 사전등재순 정렬
 select distinct emp_name 이름, dept_code 부서코드
@@ -464,7 +469,7 @@ order by dept_code;
 select emp_name,salary
 from employee
 where salary > 2000000
---RMQDU 내림차순으로정렬 큰것부터나온다.
+--급여 내림차순으로정렬 큰것부터나온다.
 ORDER BY SALARY DESC;
 
 --부서코드가 D6이거나 D9인 사원조회
@@ -496,7 +501,7 @@ where  quit_yn='N' and to_date ('2021/01/22') - hire_date > 365*20;
 select emp_name 이름,
 salary 급여
 from employee
-where  salary >=2000000 and salary<=4000000; --<-이렇게도안된다
+where  salary >=2000000 and salary<=4000000; --<-이렇게도된다
 
 
 select emp_name 이름,
@@ -693,6 +698,9 @@ select emp_name 이름 , lengthb(emp_name)이름바이트,
 email 이메일,lengthb(email) 이메일바이트
 from employee;
 
+ --============================================================================
+ --INSTR사용법
+ --===========================================================================
  
        --문자열--찾을것 --STARTPOTITION시작지점, OCCURENCE발생횟수.
 --instr(STRING,SEARCH,[POSITION,[OCCURENCE] ])
@@ -715,8 +723,14 @@ FROM DUAL;
 
 --email 컬럼값중 '@' 의 위치는 ?(이메일,위치인덱스)
 select email, instr(email,'@')
-from employee;
+from employee
+ORDER BY instr(email,'@');
 
+
+
+--=======================================================================
+--SUBSTR사용법
+--========================================================================
                 --STARTINDEX
 --substr(STRING ,POSITION  ,[ LENGTH] )
 --STRING 에서 STARTINDEX부터 LENGTH갯수만큼 짤라내어 리턴하는녀석
@@ -725,6 +739,7 @@ from employee;
 SELECT SUBSTR('SHOW ME THE MONEY' , 6, 2)
 FROM DUAL;
 
+ 
 SELECT SUBSTR('SHOW ME THE MONEY' , 6)--ME THE MONEY --마지막인자 생략시끝까지가져옴
 FROM DUAL;
 
@@ -733,12 +748,14 @@ FROM DUAL;
 
 
 --한번에 여러 컬럼 생성가능
-SELECT SUBSTR('SHOW ME THE MONEY' , 6, 2),
-SUBSTR('SHOW ME THE MONEY' , 6),
-SUBSTR('SHOW ME THE MONEY' , 6, 2)
+SELECT SUBSTR('SHOW ME THE MONEY' , 6, 2) 섭스트1,
+SUBSTR('SHOW ME THE MONEY' , 6)섭스트2,
+SUBSTR('SHOW ME THE MONEY' , 6, 2)섭스트3
 FROM DUAL;
 
---실습문제 @: 사원명에서 성만 중복없이 사전순으로 출력
+
+
+--실습문제 @: 사원명에서 성(1글자성)만 중복없이 사전순으로 출력
 SELECT distinct substr(emp_name ,1,1) 성
 from employee
 --order by substr(emp_name,1,1) asc; 도가능
@@ -746,7 +763,9 @@ from employee
 --order by 1; 도가능
 order by 성;
 
-
+--===========================================================================
+--  LPAD RPAD 사용법
+--==========================================================================
 --lpad or rpad 사용법이유사하다 
 --          byte수의 공간에 스트링을 대입하고 남은공간에 padding_char로채워라.            
 --rpad(string, byte [, padding_char])
@@ -754,23 +773,28 @@ order by 성;
 --실습문제 @: padding char는 생략시 공백문자가 대입된다.
 
 --실습
+                --20바이트다.
 select lpad(email,20,'#')
 from employee;
 select rpad(email,20,'#')
 from employee;
-select lpad(email,20),'[',lpad(email,20,'#'),']','[',rpad(email,20,'#'),']'
+select lpad(email,20) 패딩문자없음,'[',lpad(email,20,'#'),']','[',rpad(email,20,'#'),']'
 from employee;
+
 
 -- 실습문제:남자사원만 사번, 사원명, 주민번호 , 연봉 , 조회
 --주민번호 뒤 6자리는 ******숨김처리할것.
 select 
-emp_id,
-emp_name,
+emp_id 사번,
+emp_name 사원명,
+substr(emp_no , 1, 8) ||'******' 서브스트르주민번호,
 --substr(emp_no,1,8) ||'*****'emp_no,  이렇게도가능 아래처럼도가능
- rpad(substr(emp_no,1,8),14,'*') emp_no,
-(salary+(salary*nvl(bonus,0)))*12 annul_pay
+rpad(substr(emp_no,1,8),14,'*') 알패드주민번호,
+
+(salary+(salary * nvl(bonus,0)))* 12 연봉
 from employee
-where substr(emp_no,8,1) in('1','3');
+                            --남자사원 1또는3을 걸르는 구문
+Where substr(emp_no,8,1) in('1','3');
 
 
 
@@ -814,6 +838,7 @@ round(235.567,-1)
 from dual;
 
 --trunc(number [, position])
+--소수점이전까지표현 포지션을정해주면 원하는 소수점자릿수까지 표현가능
 --버림 floor보다 많이쓴다.
 select trunc(123.456),
 trunc(123.456,2)
@@ -829,31 +854,31 @@ from dual;
 --날짜형 + 숫자 =날짜형
 --날짜형 - 날짜형 =숫자
 select sysdate,
-add_months(sysdate,1),
-add_months(sysdate,-1),
-add_months(sysdate+5,1)
+add_months(sysdate,1)한달후,
+add_months(sysdate,-1)한달전,
+add_months(sysdate+5,1)오일한달후
 
 from dual;
 
 --months_between(미래,과거)
 --두 날짜형의 개월수 차이를 리턴한다.
-
 select sysdate,
         --아래는 날짜형으로 변환하는 메소드이다.
        trunc(months_between(to_date('2021/07/08'),sysdate),1) diff
-       from dual;
+      from dual;
+
        
 --문제 
 --이름,입사일,근무개월수(n개월),근무개월수(n년m개월) 조회
-select emp_name,
-        hire_date,
+select emp_name 사원명,
+        hire_date 입사일,
         trunc(months_between(sysdate,hire_date))||'개월' 근무개월수,
---        trunc(months_between(sysdate,hire_date)/12) ||'몇년',
---        mod(months_between(sysdate,hire_date),12) || '개월',
-        trunc(mod(months_between(sysdate,hire_date),12)) || '개월' 근무개월수
-
+        trunc(months_between(sysdate,hire_date)/12) ||'년' 년수,
+--        mod(months_between(sysdate,hire_date)*12,12) || '개월' 개월수,
+        trunc(mod(months_between(sysdate,hire_date),12)) || '개월' 개월수
 from employee;
 
+        
 --extract(year |month |day|hour|minute|second from date): number
 --날짜형 데이터에서 특정필드만 숫자형으로 리턴.
 
@@ -862,17 +887,23 @@ select extract(year from sysdate)yyyy,
         extract(day from sysdate)dd,
         -- 시분초는 방법이다르다.
 --        extract(hour fro sysdate) hh 안된다.
-        extract(hour from cast(sysdate as timestamp))hh,
+                                            --24시기준이지만 12시간기준으로바꾸는
+                                            --방법은 간단하지않아서 넘어간다.
+        extract(hour from cast(sysdate as timestamp)) hh,
         extract(minute from cast(sysdate as timestamp))mm,
         extract(second from cast(sysdate as timestamp))ss
-
 from dual;
+
 
 --trunc(date)
 --시분초 정보를 제외한 년월일 정보만 리턴
-select to_char(sysdate, 'yyyy/mm/dd hh24:mi:ss') date1,
-        to_char(trunc(sysdate), 'yyyy/mm/dd hh24:mi:ss') date1
+select to_char(sysdate, 'yyyy/mm/dd hh24:mi:ss') "24시간기준",
+        to_char(trunc(sysdate), 'yyyy/mm/dd hh24:mi:ss') "24시간기준트렁크",
+        to_char(sysdate, 'yyyy/mm/dd hh12:mi:ss') "12시간기준",
+        to_char(trunc(sysdate), 'yyyy/mm/dd hh12:mi:ss') "12시간기준트렁크"
 from dual;
+
+
 
 --===========================================================================
 -- D.형변환 함수
@@ -887,46 +918,60 @@ NUMBER      STRING          DATE
 */
 --TO_CHAR(DATE |NUMBER[,FORMAT])
 select to_char(sysdate,'yyyy/mm/dd(dy) hh:mi:ss am')now,
-        to_char(sysdate,'fmyyyy/mm/dd(dy) hh:mi:ss am')now,--형식문자로인한 앞글자0
-        --을제거
+
+                        --fm 형식무낮로인한 앞글자 0을 제거
+        to_char(sysdate,'fmyyyy/mm/dd(dy) hh:mi:ss am')fmnow2,
+                                        
+         to_char(sysdate,'fmyyyy/mm/dd(day) hh:mi:ss am')now3,
 --        to_char(sysdate,'yyyy년/mm월/dd일')now
         --이처럼하고싶을떄는 방법이다로있다.
-        to_char(sysdate, 'yyyy"년" mm"월" dd"일" ') now
+        to_char(sysdate, 'yyyy"년" mm"월" dd"일" ') now4,
+          to_char(sysdate,' mm"월" dd"일" ') now4
 from dual;
-
-select to_char(1234567,'fmL9,999,999,999')won,  --L은 지역화폐
-        to_char(1234567,'fmL9,999')won,    --자리수가 모잘라서 오류
-        to_char(123.4 , '999.99'), --9는 소수점 이상의 빈자리는공란 ,소수점이하빈자리는
+        
+                        --fml은 지역화폐
+select to_char(1234567,'fmL9,999,999,999')원화,  --L은 지역화폐
+        to_char(1234567,'fmL9,999')자리수모자라는원,    --자리수가 모잘라서 오류
+        to_char(123.4 , 'fm999.99'), --9는 소수점 이상의 빈자리는공란 ,소수점이하빈자리는
         --                              -0처리
-        to_char(123.4 , '0000.00') --빈자리는 모두 0처리.
-from dual;
+        to_char(123.4 , 'fm0000.00') --빈자리는 모두 0처리. 즉0보다는9를많이쓴다.
+         from dual;
+
 
 --이름 , 급여(3자리 콤마), 입사일( 1990-9-3(화))을조회
-
-select emp_name,
-       to_char(salary,'fml9,999,999,999,999') salary,
-       to_char(hire_date,'fmyyyy-mm-dd(dy)')hire_date
+select emp_name 사원명,
+       to_char(salary,'fml9,999,999,999,999') 급여,
+       to_char(hire_date,'yyyy-mm-dd(dy)') 입사일
 from employee;
 
+            --문자를받아서 어떤형식의문자인지를 알고 숫자형으로바꿔준다.
 --to_number(string, format)
 select 
-to_number( '1,234,567' , '9,999,999') +100,
-to_number('￦3,000' , 'L9,999')+100
+            --문자열        
+to_number( '1,234,567' , '9,999,999') +100 숫자로바꽈서연산,
+                    --L은 지역화폐 기준이다.
+to_number('￦3,000' , 'L9,999')+100 숫자로바꿔서돈연산
 --    '1,234,567'+100 -- 우리가보기엔숫자지만 오라클이보기엔 문자열이다.
 from dual;  
 
 --자동형변환 지원
 select '1000'+100,
         '99'+'1',
+        --문자열 붙이기
         '99'||'1'
 from dual;        
     
 --to_date(string, format)
-select to_date('2020/09/09' , 'yyyy/mm/dd')
+select to_date('2020/09/09' , 'yyyy/mm/dd'),
+            --날자연산가능
+to_date('2020/09/09' , 'yyyy/mm/dd')+1
 from dual;
 
 --'2021/07/08 21:50:00 '를 2시간후의 날짜정보를 yyy/mm/dd hh24:mi :ss형식으로출력
 select to_char(to_date('2021/ 07/08 21:50:00', 
+                                --데이트는 날짜기준이라서 24로나눈건 시간 이다.
+                                --거기에 2를곱하면 2시간이나온다 그걸더하면두시간후가나온다.
+                                --24시간중의 2라는뜻이다. 2시간
        'yyyy/mm/dd hh24:mi:ss') +  (2 / 24), 
  'yyyy/mm/dd hh24:mi:ss') result
 
@@ -937,34 +982,39 @@ from dual;
 --1분:1/24*60
 --1초는:1/(24*60*60)
 
-
+                            --2시간      --3분
 select to_char(sysdate + 1 + (2 / 24) + (3 / (24 * 60))
+                            --4초
                        + (4 / (24 * 60 * 60)), 
                        'yyyy-mm-dd hh24:mi:ss') result
 from dual;
+
 
 --기간타입
 --interval year to month :년월 기간
 --interval date to second :일시분초 기간
 
 --1년 2개월 3일 4시간 5분 6초후 조회
+--기존방식 으로해본다.           --1년2개월 3일  4시간 5분       6초
 select to_char(add_months(sysdate,14)+3+(4/24)+(5/24/60)+(6/24/60/60),
 'yyyy/mm/dd hh24: mi :ss'
 ) result
 from dual;
 
+--기간타입으로 바까본다
                 --year month interval
-select to_char(sysdate +to_yminterval('01-02'),
+select  SYSDATE 지금,
+to_char(sysdate +to_yminterval('01-02') ,
+'yyyy/mm/dd hh24:mi:ss') 일년2개월더하기
+from dual;
+
+
+select to_char( --연에서월까지             --날 에서 초까지
+sysdate +to_yminterval('01-02')+to_dsinterval('3 04:05:06'),
 'yyyy/mm/dd hh24:mi:ss')
 result
 from dual;
 
-
-select to_char(
-sysdate +to_yminterval('01-02')+to_dsinterval('3  04:05:06'),
-'yyyy/mm/dd hh24:mi:ss')
-result
-from dual;
 
 --numtodsinterval(diff,unit)
 --numtoyminterval(diff,unit)
@@ -972,8 +1022,10 @@ from dual;
 --unit : year |month |day |hour |minute| second
 
 select numtodsinterval( to_date('20210708','yyyymmdd')-sysdate,
-'day')
+'day') 디에스인터벌
 from dual;
+--질문 => 밑에 55 06:49:56.000000 000부분을 트렁크로 안보이게처리할수없는지.
+
 
 --null처리함수
 --nvl(col,nullvalue)
@@ -987,34 +1039,37 @@ from employee;
 
 --선택함수1 
 --decode(expr,값1,결과값1,값2,결과값2,....[,기본값])
-select emp_name,
-emp_no,         
-            --8번째에 1글짜를 가져온다.
-decode(substr(emp_no,8,1),'1','남','2','여','3','남','4','여') gender,
-decode(substr(emp_no,8,1),'1','남','3','남','여') gender
+select emp_name 사원명,
+emp_no 사원준민번호,         
+            --8번째에 1글짜를 가져온다. 1이면남 2면여 3이면남 4면여
+decode(substr(emp_no,8,1),'1','남','2','여','3','남','4','여') 성별1,
+                        --1이면 남 3이면남 나머지는 여
+decode(substr(emp_no,8,1),'1','남','3','남','여') 성별2
 from employee;
 
 --직급 코드에 따라서 j1-대표 , j2/j3-임원 ,나머지는 평사원으로출력(사원명,직급코드,직위)
-
 select emp_name 사원명,
        job_code 직급코드,
        decode(job_code, 'J1','대표','J2','임원','J3','임원','평사원')
 from employee;
 
+
 --where 절에도 사용가능
 --여사원만 조회
-
-select emp_name ,
-       emp_noselect emp_name 사원명,
+select 
+       emp_name 사원명,
        job_code 직급코드,
-       decode(job_code, 'J1','대표','J2','임원','J3','임원','평사원')
-from employee;
+       decode(substr(emp_no,8,1),'1','남','3','여') 성별
+ from employee
+where decode(substr(emp_no,8,1),'1','남','3','여') ='여';
 
-select emp_name,
-emp_no,         
+
+
+select emp_name 사원명,
+emp_no 사원주민번호,         
             --8번째에 1글짜를 가져온다.
-decode(substr(emp_no,8,1),'1','남','2','여','3','남','4','여') gender,
-decode(substr(emp_no,8,1),'1','남','3','남','여') gender
+decode(substr(emp_no,8,1),'1','남','2','여','3','남','4','여') 성별,
+decode(substr(emp_no,8,1),'1','남','3','남','여') 성별나머지
 from employee;
 
 select emp_name,
@@ -1023,18 +1078,25 @@ emp_no,
 decode(substr(emp_no,8,1),'1','남','2','여','3','남','4','여') gender
 from employee;
 
+
+
+
 --선택함수2
 --case
 /*
+===========================================
 type1(decode와유사)
 
 case표현식
+
 when 값1 then 결과1
 when 값2 then 결과2
 ....
 [else 기본값]
-end
 
+end
+=============================================
+==============================================
 type2
 
 case
@@ -1043,30 +1105,53 @@ case
     .....
     [else 기본값]
     end
+================================================    
 */
 
 
 --type1
-select emp_no,
+select emp_no 사원명,
 case substr(emp_no,8,1)
         when '1' then '남'
         when '3' then '남'
         else '여'
-        end gender
+        end 별칭성별
 from employee;
 
 --type2
-select emp_no,
+select emp_no 사원명,
 case
     when substr(emp_no,8,1)='1' then'남'
     when substr(emp_no,8,1)='3' then'남'
+    --위두가지가해당되지않는경우는 '여'이다.
     else '여'
-    end gender,
-case 
+    end  성별,
+    
+case
+        --한줄로도 줄일수있다.  or도가능
     when substr(emp_no,8,1) in('1','3')then'남'
     else'여'
-    end gender
+    end 성별케이스2,
+    
+    --직급 도해본다.
+    --타입1방식 
+    case job_code
+    when 'J1' then '대표'
+    when 'J2' then '임원'
+    when 'J3' then '임원'
+    ELSE '평사원'
+    END 직급타입1,
+    
+    
+    --타입 2방식
+     --타입1방식 
+    case 
+    when job_code ='J1' then '대표'
+    when job_code in('J2','J3') then '임원'
+    else '평사원'
+    END 직급타입2
 from employee;
+
 
 
 --=======================================================================
@@ -1080,45 +1165,57 @@ select sum(salary)
 from employee;
 
 
---그룹함수의 결과와 일반컬럼을 동시ㅣ에 조회할 수 없다.
-select EMP_NAME,
-sum(salary)
+--그룹함수의 결과와 일반컬럼을 동시에 조회할 수 없다.
+select EMP_NAME 사원명,
+sum(salary) 급여합계
 from employee;
 --ORA-00937: not a single-group group function
+--그룹함수 여러개는가능하다.
+select sum(salary)총급여합계,trunc(avg(salary))총급여평균
+from employee;
 
-                --보너스에는 널이있다.
-select sum(salary),SUM(BONUS),
-  sum(salary +(salary*nvl(bonus,0))) sum
+
+                --보너스에는 널이있다. null값 제외하고 누계처리
+select sum(salary) 급여합계,SUM(BONUS) 보너스합계,
+  sum(salary +(salary*nvl(bonus,0))) 보너스포함급여합계
   --가공된컬럼도 그룹함수가능
 from employee;
 --널값이 있는 컬럼은 널값이있는 컬럼 제외하고 더하기한다.
 
+
 --avg(col) 
 --평균
 select round(avg(salary),1) avg,
+                            --fml원화표시 3자리마다,을찍는다.
     to_char(round(avg(salary),1),'FML9,999,999,999') AVG2
-    
 from employee;
+
 
 --부서코드가 D5인 부서원의 평균급여 조회
-select to_char(round(avg(salary),1),'fml9,999,999,999')avg3
+select to_char(round(avg(salary),1),'fml9,999,999,999')D5평균급여
 from employee
+            --웨어절 통해 D5부서 필터링
 where dept_code ='D5';
 
+
 --남자사원의 평균 급여 조회
-select  to_char(round(avg(salary),1),'fml9,999,999,999,999') avg4
+select  to_char(round(avg(salary),1),'fml9,999,999,999,999') 남사원평균급여
 from employee;
+            --남사원 웨어절조건 필터링
 where substr(emp_no,8,1,)in('1','3');
 
 --count(col)
 --null 이 아닌 컬럼의 개수
-
+select emp_id
+from employee;
+--의 갯수만 출력
 select count(emp_id)
 from employee;
+
 --*모든 컬럼, 즉 하나의 행을 의미
-select count(*),
-        count(bonus)notnullc, --9 bonus 컬럼이 null이 아닌 행의 수
-        count(dept_code)
+select count(*) 모든행,
+        count(bonus) 보너스널아닌행의수, --9 bonus 컬럼이 null이 아닌 행의 수
+        count(dept_code) 보너스받는사원수
 from employee
 where bonus is not null ;
 --보너스를 받는 사원 수 조회.
@@ -1126,22 +1223,27 @@ where bonus is not null ;
 --sum ()을이용하는법 =>가상코드를 만들어본다.
 select sum(
         case
+                    --보너스를 받는거면 1
             when bonus is not null then 1
+                    --보너스 안받으면 0
             when bonus is null then 0
             end
-            )bonusman
+            )보너스받는사람
 from employee;
+
 
 --max(col) | min(col)
 --숫자, 날짜(과거에서->미래순으로커진다) , 문자(ㄱ~>ㅎ 사전등재순으로커진다)
-select max(salary),min(salary),
-        max(hire_date),min(hire_date)
+select max(salary)최고봉급,min(salary)최저봉급,
+        max(hire_date)입사일가장늦은,min(hire_date)입사일가장빠른
 from employee;
 
 --나이 추출시 주의 점
 --현재년도-탄생년도+1 =>한국식나이
-SELECT emp_name,
-    emp_no,
+SELECT emp_name 사원명,
+    emp_no 사원주민번호,
+    substr(emp_no,1,2)년생
+    from employee;
 --substr(emp_no,1,2),         --이부분이문제다. 따로빼서 테스트해본다.
 --extract(year from sysdate) -extract(year from to_date(substr(emp_no,1,2),'yy'))
 --+1 ext,                                 --이부분 yy에대한설명
@@ -1154,17 +1256,17 @@ SELECT emp_name,
 --              rr은 1950년도 
 
 --extract(year from sysdate)--
+
+select 
 extract(year from sysdate)-decode(substr(emp_no,8,1),'1',1900,'2',1900,200)
 +substr(emp_no,1,2))+1 age
-
-
 from employee;
 
 --정리해서다시써본다
-SELECT emp_name,
-    emp_no,
+SELECT emp_name 상원명,
+    emp_no 주민번호,
     extract(year from sysdate)-(decode(substr(emp_no,8,1),'1',1900,'2',1900,2000)
-+substr(emp_no,1,2))+1 age
++substr(emp_no,1,2))+1 나이
 from employee;
 
 
@@ -1176,8 +1278,8 @@ from employee;
 --지정컬럼기준으로 세부적인 그룹핑이 가능하다.
 --group by 구문 없이는 전체를 하나의 그룹으로 취급한다.
 --group by 절에 명시한 컬럼만 select 절에 사용가능하다.
-select dept_code, --emp_name, <=이렇게는쓸수없다. 그룹바이절에명시된 컬럼이아니기떄문이다.
-sum(salary)
+select dept_code 그룹바이부서명, --emp_name, <=이렇게는쓸수없다. 그룹바이절에명시된 컬럼이아니기떄문이다.
+sum(salary)급여합계
 from employee
 group by dept_code;  --일반컬럼 or가공컬럼이 전부 가능.
 --부서별로 (dept_code) 코드 별로 salary값을 더한것이다
@@ -1188,8 +1290,8 @@ select emp_name,dept_code, salary
 from employee;
 
 --직급별로 평균급여를 구하고싶다.
-select  job_code,
-    trunc(avg(salary),1)
+select  job_code 직급,
+    trunc(avg(salary),1)평균급여1자리수까지
 from employee
 group by job_code
 order by job_code;
@@ -1206,28 +1308,32 @@ select nvl(dept_code,'intern') 직급코드,
 from employee
 group by dept_code;
 
+
+
 --부서코드별 사원수 조회/ ,급여평균, 급여합계조회
 select nvl(dept_code,'intern')직급코드,
        count(*) 사원수,
        
        --이렇게는 숫자만
-       trunc(avg(salary))급여평균,
-       trunc(avg(salary),1)급여합계,
+       trunc(avg(salary))급여평균1,
+       trunc(avg(salary),1)급여평균첫재짜리수,
        --아래두가지로도가능
-       to_char(sum(salary),'fml9,999,999,999') sum,
-       to_char(trunc(avg(salary),1),'fml9,999,999,999,0') avg
+       to_char(sum(salary),'fml9,999,999,999') 급여합계2,
+       to_char(trunc(avg(salary),1),'fml9,999,999,999,0') 급여평균2
 from employee
-group by dept_code;
-orderby dept_code;
+group by dept_code
+order by dept_code ;
 
 --성별인원수, 평균 급여조회
-select decode(substr(emp_no,8,1),'1','남','3','남','여') gender,
+        --성별컬럼이없어서 가상의컬럼 성별이란컬럼을 만든다.
+select decode(substr(emp_no,8,1),'1','남','3','남','여') 성별,
 count(*) count,
 
 --평균
-to_char(trunc(avg(salary),1),'fml9,999,999,999,0')avg
+to_char(trunc(avg(salary),1),'fml9,999,999,999,0')평균급여
 from employee
 group by decode(substr(emp_no,8,1),'1','남','3','남','여');
+
 
 
 --직급코드 J1을 제외하고 ,입사년도별 인원수를 조회해주세요.
@@ -1265,8 +1371,8 @@ group by dept_code,job_code
 order by 1,2;
 
 --부서별 성별 인원수 조회
-
-select nvl(dept_code,'인턴'),
+        --널 인턴처리
+select nvl(dept_code,'인턴')부서코드,
        decode(substr(emp_no, 8, 1),'1', '남', '3', '남', '여') 성별,
        count(decode(substr(emp_no, 8, 1),'1','남','3','남', '여')) 인원
 from employee
@@ -1280,37 +1386,46 @@ order by 1;
 --group by 이후 조건절 ,having 단독불가.
 
 --부서별 평균 급여가 300만원 이상인 부서만조회
-
-select dept_code,
-        trunc(avg(salary))avg
+select dept_code 부서코드,
+        trunc(avg(salary))평균급여
 from employee
 group by dept_code
-having avg(salary)>=3000000
+having avg(salary)>=3000000 --그룹바이의 조건추가
 order by 1;
 
 --직급별 인원수가 3명이상인 직급과 인원수 조회
-select job_code, count(*)
+select job_code 직급, count(*) 인원수
 from employee
 group by job_code
-having  count(*) >=3
+having  count(*) >=3 --직급 의 추가 조건
 order by job_code;
 
 --관리하는 사원이 2명이상인 manager의 아이디와 관리하는 사원수 조회
-select manager_id,
-count(*)
+select emp_id 사원번호,
+emp_name 사원명,
+manager_id 상관번호
+from employee;
+
+select manager_id 관리번호,
+count(*) 관리사원수
 from employee
+            --null 인 부분 제외
 where manager_id is not null
 group by manager_id
 having count(*) >=2
 order by 1;
 
 --이렇게도가능하다.
-select manager_id,
-count(*)
+--널처리를 해빙에넣어서도 처리가능하다.
+select manager_id 관리번호,
+count(*) 관리사원수
 from employee
 group by manager_id
+            --널처리를 해빙에넣어봤다.
+            --카운트는 널행을 처리하지않는다.
 having count(manager_id) >=2
 order by 1;
+
 
 --=========================================================================
 --rollup , cube(col1,cil2....컬럼나열가능) 함수소개
@@ -1324,7 +1439,6 @@ order by 1;
 --==============================================
 
 --rollup 예제
---
 select nvl(dept_code,'인턴') 부서,
 count(*) 인원
 from employee
@@ -1343,14 +1457,15 @@ group by rollup(dept_code);
         --실제데이터랑 집계 소계데이터의 null을 구분할수없다.(nvl)
 --select nvl(dept_code,'인턴') 부서,
 --소계의 null을 처리하기위해 그루핑함수가필요하다.
-select dept_code,
+select dept_code 부서코드,
 --그루핑 함수가 0과 1을 구분한다.  집계데이터인 최하의 null은 그루핑결과1이된다.
-grouping(dept_code),
+grouping(dept_code) 집계데이터구분,
 count(*) 인원
 from employee
 group by rollup(dept_code); 
 
 --디코드 를이용해서 다음순서를진행해본다.
+                    --0이면 nvl(dept_code,'인턴'),  1이면 합계를출력해주세요
 select decode(grouping(dept_code),0,nvl(dept_code,'인턴'),1,'합계') dept_code,
 --grouping(dept_code),
 count(*) 인원
@@ -1358,8 +1473,8 @@ from employee
 group by rollup(dept_code)
 order by 1;
 
---두개이상의 컬럼을 rollup 이랑 cube에 전달하는경우가다르다.
 
+--두개이상의 컬럼을 rollup 이랑 cube에 전달하는경우가다르다.
 --예제 ) 부서별 직급 코드별 인원수
 select dept_code 부서,
 job_code 직급,
@@ -1368,20 +1483,30 @@ from employee
 group by dept_code,job_code
 order by 1;
 
---rool up
+
+--rool up으로해본다.
+select dept_code 부서,
+job_code 직급,
+count(*) 인원
+from employee
+        --부서코드별 소계를 각부서 밑에 출력해준다.
+group by rollup(dept_code,job_code)
+order by 1;
+
+
+-->디코드로 널 부분을 고쳐서 가시성좋게 설정해준다.
 select 
 decode(grouping(dept_code),0,nvl(dept_code,'인턴'),'합계') 부서,
 decode(grouping(job_code),0,job_code,'소계') 직급,
-
 count(*) 인원
 from employee
 group by rollup(dept_code,job_code)
-order by 1;
+order by 1,2;
 --==?>>이렇게하면 각부서별 그루핑 밑에 해당그루핑의 소계를 맨밑에 달아준다.
 
---cube를써본다.
-
-select decode(grouping(dept_code),0,nvl(dept_code,'INTERN'), '소계') 부서,
+--cube를써본다.  -->롤업은 dept_code만 그룹핑을해서보여준다. 
+                -->cube는 dept_code, job_code 양방향을다보여준다.
+select decode(grouping(dept_code),0,nvl(dept_code,'인턴'), '소계') 부서,
 decode(grouping(job_code),0,job_code,'소계') 직급,
 count(*) 인원
 from employee
@@ -1414,7 +1539,7 @@ select*
 from employee
 where emp_name ='송종기';
 
-select dept_code --'D9'
+select dept_code 부서명 --'D9'
 from employee
 where emp_name = '송종기';
 
@@ -1422,62 +1547,175 @@ select dept_title--총무부
 from department
 where dept_id='D9';
 
+-->임플로이 테이블에서 d9을 찾고 디파트먼트테이블에서 d9을 찾아서 총무부를 찾을수있었다.
+-->임플로이 테이블과 디파트먼트테이블이 같은테이블이라면 송종기를찾아서 부서명컬럼의 부서명컬럼의
+--이름을 한번에찾을수있었을것을 위한 기능이다.
+--즉 두테이블을합쳐서 원하는 데이터를 편하게찾기위한 방법이다.
+
 --join
-select  D.dept_tilte
+select*from employee;
+select * from department;
+--위두 테이블을 합친것을 확인해볼수있따.
+select  *
+        --테이블별칭E          디파트먼트별칭 D
 from employee E join department D
+    
 on E.dept_code =D.dept_id;
 where E.emp_name='송종기';
 
 select*from employee;
 select * from department;
+--아래두 테이블을 합친것을 확인해볼수있따.
 
+--위의 조인 테이블을통해서 송종기 사원의 부서명을 추출해본다.
+select  D.dept_title
+from employee E join department D
+on E.dept_code =D.dept_id
+where E.emp_name='송종기';
+--=============================================================================
+--두테이블의 컬럼명이같을때는 반듯이 어떤테이블의 컬럼인지를명시해주어야한다
+--아주중요한 에러
+--============================================================================
+--사원명 직급코드 잡네임 출력
+select emp_name 사원명, job_code 직급코드 ,job_name 직급이름
+from employee join job on employee.job_code = job.job_code;
+--ORA-00918: column ambiguously(모호하다) defined 에러발생
+                        --잡코드는 양쪽테이블에모두존재하기에 어떤테이블인지를명시해주어야한다.
+select emp_name 사원명, employee.job_code 직급코드 ,job_name 직급이름
+from employee join job on employee.job_code = job.job_code;
+--원래는 이렇게쓰나 별칭을 사용하면 간편해지기에 별칭을 쓴다.
+select emp_name 사원명, E.job_code 직급코드 ,job_name 직급이름
+from employee E join job J on E.job_code = J.job_code;
+--기준컬럼명이 좌우테이블에서 동일하다면, ON대신 USING 사용가능
+
+select *
+from employee E join job J
+    --using에 사용된컬럼이 제일첫 인덱스 즉 첫번쨰로나온다.
+using(job_code);
+--using을 사용했다면 해당컬럼의 별칭을 사용할수없다.
+
+
+--===========================================================================
+--USING사용시 별칭 컬럼사용불가 사용시 에러 케이스 예제
+--==========================================================================
+select e.job_code
+from employee E join job J
+    --using에 사용된컬럼이 제일첫 인덱스 즉 첫번쨰로나온다.
+using(job_code);
+-->>>>using 사용시 별칭을 호출하면 에러가발생한다.
+--ORA-25154: column part of USING clause cannot have qualifier
+
+
+
+
+select *from employee;
+SELECT*FROM job;
+
+--==============================================================================
 --join 종류
 --1.EQUI -JOIN 동등 비교조건(=)에의한 조인 ==>거의대부분이 이킈조인이다.
 --2.NON-EQUI JOIN   동등비교조건이아닌 (between and,in, not in, !=)조인
 
 --join문법
---1.ANSI표준문법  :모든 DBMS공통 문법
---2.Vendor(회사이름)별 문법 : DBMS별로 지원하는 문법, 오라클 전용 문법(포함)
+--1.ANSI표준문법  :모든 DBMS공통 문법join 키워드
+--2.Vendor(회사이름)별 문법 : DBMS별로 지원하는 문법, 오라클 전용 문법,(컴마)사용(포함)
 
 --EQUI JOIN종류
 /*
-1. INNER JOIN
+1. INNER JOIN 교집합
 
-2. OUTER JOIN
-
+2. OUTER JOIN 합집합 
+        --left outer join 좌측 테이블기준 합집합
+        --right outer join 우측 테이블기준 합집합
+        --full outer join 약테이블 기준 합집합
 3. CROSS JOIN
+        두테이블간의 조인할 수 있는 최대경우의 수를 표현
 
 4. SELF JOIN
-
+        같은테이블의 조인
 5. MULTIPLE JOIN
-
+        3개이상의 테이블을조인
 */
 
+--============================================================================
+--INNER JOIN
+--============================================================================
+/*
+    A(inner) join B 교집합
+    1.기준컬럼이 NULL인경우, 결과집합에서 제외.
+    2.기준컬럼값이 상대테이블 에 존재하지 않는 경우, 결과집합에서 제외.
+*/
+
+select*
+from employee E join department D
+on E.dept_code = D.dept_id;
+--두행이없다 null인행 제외
 
 select *
 from employee;
+select * 
+from department;
+--1.employee 에서 dept_code가 null인 행 제외 :인턴사원 2행 제외
+--2.department 에서 dept_id가 D3,D4,D7인행은 제외
+--최종결과 22행
 
-select emp_id, emp_name
-from employee 
-where emp_id>=220;
+select*
+from employee E join job J
+on E.job_code =J.job_code;
+--두테이블의 조건이 같다면 빠지는 행은없을수있다.
 
-select emp_id, emp_name 
-from employee 
-where emp_id >210 and emp_id <220  
-order by emp_id desc;
+------------------------------------------------------------------------------
+--OUTER JOIN
+------------------------------------------------------------------------------
+--1.LEFT (OUTER)<=생략가능 JOIN
+--좌측테이블 기준
+--좌측테이블 모든행이 포함, 우측테이블에는 ON조건절에 만족하는행만포함.
+select*
+from employee E left outer join department D
+on E.dept_code =D.dept_id;
+--결과를보면 좌측테이블의 모든 행은 추가되고 우측테이블의 없는데이터는 null로채워 제일밑에 채워
+--진다.
 
-select * from employee 
-OFFSET 1 ROWS;
+--2.right outer join
+--우측테이블기준
+--우측테이블 모든행이 포함, 좌특테이블에는 on조건절에 만족하는 행만포함.
+select*
+from employee E right outer join department D
+on E.dept_code =D.dept_id;
 
- select * from employee
-            OFFSET 201 ROWS;
+--임플로이에없는행은 역시 null로 채워서 출력 그래서 25행출력
 
-SELECT EMP_ID FROM EMPLOYEE;
+--3.full outer join 잘안쓰인다.
+--완전조인
+--좌우 테이블 모두포함
+select*
+from employee E full outer join department D
+on E.dept_code =D.dept_id;
+--레프트할떄빠졌던 2행 라이트할떄빠졌던 3행 모두 다 들어와서 교집합할떄의 22행+2+3해서27행된다.
 
-SELECT * FROM EMPLOYEE
-OFFSET 15 ROWS
-FETCH NEXT 1;
+--사원명/부서명 조회시
+--부서지정이 안된사원은 제외 :inner join
+--부서지정이안된 사원도포함:left join
+--사원배정이 안된 부서도 포함: right join
 
-select * from employee 
-order by emp_id
-offset 2 rows;
+--==========================================================================
+--CROSS JOIN  쓸데가 별로없다.
+--==========================================================================
+--상호조인
+--ON 조건절 없이, 좌측테이블 행과 우측테이블의 행이 연결될수있는 모든경우의 수를 포함한결과집합.
+--CARTESIAN'S PRODUCT
+--216 행이나왔다 -24*9
+select *
+from employee E cross join department D;
+
+--쓸대가별로없지만 한가지 쓸만한경우의 수를 소개해본다.
+--일반컬럼, 그룹합수결과를 함계조회.
+select trunc(avg(salary))
+from employee;
+                        --그룹합수를 같이 조회할수있게되었다.
+SELECT EMP_NAME, SALARY,AVG,SALARY -AVG 평균차액
+                             --쿼리문전체의 결과값을 가상테이블화할수있다.       
+from employee E cross join (select trunc(avg(salary))avg from employee)A
+
+
+

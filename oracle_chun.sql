@@ -51,3 +51,51 @@ where class_type like '전공선택'
 group by department_no, class_type
 having count(department_no) >= 10
 order by department_no;
+
+--학번/학생명/담당교수명 조회
+--1.두테이블의 기준컬럼파악
+--2.on조건절에 해당되지 않는 데이터 파악
+
+select * from tb_student; --coach_professor_no
+select * from tb_professor; --professor_no
+
+select*
+from tb_student S join tb_professor P
+on S.coach_professor_no =P.professor_no;
+--담당교수가 배정되지 않은 학생이나 교수를 제외 579명
+-->inner join
+--담당교수가 배정되지않은 학생 포함 leftjoin
+--담당학생이없는 교수도포함 rightjoin
+
+-->inner조인 담당교수가 배정되지않은 학생이나 교수제외
+select count(*)
+from tb_student S join tb_professor P
+on S.coach_professor_no =P.professor_no;
+
+-->left join 담당교수가 배정되지않은 학생포함588 (579+9)
+select count(*)
+from tb_student S left join tb_professor P
+on S.coach_professor_no =P.professor_no;
+
+-->right join 담당학생이없는 교수 포함 580  (579+1)
+select count(*)
+from tb_student S right join tb_professor P
+on S.coach_professor_no =P.professor_no;
+
+
+
+--1.교수 배정을 받지 않은 학생 조회 --9명 좌측기준
+select count(*)
+from tb_student 
+where coach_professor_no is null;
+
+--2. 담당학생이 한명도없는 교수 우측기준
+--총전제 교수 수를알아야하고
+select count(*)
+from tb_professor;
+
+--중복없는 담당교수 수 113명 
+select count(distinct coach_professor_no)
+
+from tb_student ;
+

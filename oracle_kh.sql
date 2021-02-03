@@ -1715,7 +1715,163 @@ from employee;
                         --그룹합수를 같이 조회할수있게되었다.
 SELECT EMP_NAME, SALARY,AVG,SALARY -AVG 평균차액
                              --쿼리문전체의 결과값을 가상테이블화할수있다.       
-from employee E cross join (select trunc(avg(salary))avg from employee)A
+from employee E cross join (select trunc(avg(salary))avg from employee)A;
 
 
+
+
+--============================================================================
+--2021.02.03 시험
+--===========================================================================
+--2.	
+--직원 정보가 저장된 EMP 테이블에서 각 부서(DEPT)별
+--급여(SALARY)의 합계들을 구하여, 부서 급여합이 9백만을 초과하는 부서와 
+--급여합계를 조회하는 SELECT 문을 작성하시오. (25점)
+-- 조회한 컬럼명과 함수식에는 별칭 적용한다. (DEPT 부서명, 함수식 급여합)4
+select decode(grouping(dept_code),0,nvl(dept_code,'인턴'), '소계') 부서
+,count(*)
+from employee
+group by rollup(dept_code)
+order by 1;
+
+--
+select dept_title 부서명, 급여합
+from (select dept_title, sum(salary) 급여합
+from employee
+left join department on (dept_code = dept_id)
+group by dept_title)
+where 급여합 > 9000000;​
+
+--3.	
+--직원 정보를 저장한 EMP 테이블에서 사원명(ENAME)과 주민번호(ENO)를 함수를 사용하여
+--아래의 요구대로 조회되도록 SELECT 구문을 기술하시오. (25점)
+--
+--'- 주민번호는 '891224-1******' 의 형식으로 출력되게 하시오
+--
+--- 조회결과에 컬럼명은 별칭 처리하시오. => ENAME 사원명, ENO 주민번호
+
+select 
+emp_name 사원명,
+substr(emp_no , 1, 8) ||'******' 주민번호
+from employee;
+
+--4.	
+--아래의 구문을 CASE 표현식을 사용하는 SELECT 문으로 변경하시오. (40점)
+--
+--- MERIT_RATING(인사고가)에 따라 BONUS(성과급)을 조회한다.
+--merit_rating이 'A'라면 salary의 20%만큼 보너스를 부여한다.
+--merit_rating이 'B'라면 salary의 15%만큼 보너스를 부여한다.
+--merit_rating이 'C'라면 salary의 10%만큼 보너스를 부여한다.
+--그 외 merit_rating값은 보너스가 없다.
+
+select 
+case merit_rating
+when 'A' then bonus = 0.2
+when 'B' then bonus = 0.15
+when 'C' then bonus = 0.1
+else bonus = 0
+end
+from employee;​
+--이러가난다
+
+--============================================================================
+--기술시험
+--============================================================================
+--1. 직원테이블(EMP)이 존재한다.
+--직원 테이블에서 사원명,직급코드, 보너스를 받는 사원 수를 조회하여 
+--직급코드 순으로 오름차순 정렬하는 구문을 작성하였다.
+--이 때 발생하는 문제점을 [원인](10점)에 기술하고, 
+--이를 해결하기 위한 모든 방법과 구문을 [조치내용](30점)에 기술하시오.-
+--SELECT
+--EMPNAME
+--, JOBCODE
+--, COUNT(*) AS 사원수
+--FROM
+--EMP
+--WHERE
+--BONUS != 'NULL'
+--GROUP BY JOBCODE
+--ORDER BY JOBCODE;
+--
+----답원인
+--WHERE BONUS != 'NULL' 로는 NULL인지 아닌지를 구분할 수 없다.
+--왜냐하면 NULL에게는 =, + 같은 연산자를 사용할 수 없기 때문이다.
+--
+--
+--
+--EMPNAME
+--
+--, JOBCODE
+--
+--, COUNT(*) AS 사원수
+--
+--그룹함수의 결과와 일반 컬럼을 동시에 조회할 수 없다.
+--
+--
+--
+--GROUP BY JOB_CODE
+--
+--에서 EMPNAME을 표현하지 않아 오류가 난다
+-------------------------------------------------------
+--조치사항
+--해당 테이블이 생성되어 있는지 확인한다. 
+--또는 오타가 없는지 확인한다. 
+--
+--
+--
+--1. null 판단은 is not null 구문을 이용.
+--
+--2. window funtion 의 집계 함수를 이용.
+--
+--3. GROUP BY JOB_CODE를 지우거나 EMPNAME을 추가.​
+--
+--SELECT EMPNAME,
+--
+--JOBCODE,
+--
+--COUNT(*) OVER() 사원수
+--
+--FROM EMP
+--
+--WHERE BONUS IS NOT NULL
+--
+--[ GROUP BY JOB_CODE, EMPNAME ] -- 생략 가능
+--
+--ORDER BY JOBCODE;​
+
+----==============
+--2.직원 테이블(EMP)에서 부서 코드별 그룹을 지정하여 부서코드,
+--그룹별 급여의 합계, 그룹별 급여의 평균(정수처리), 
+--인원수를 조회하고 부서코드순으로 나열되어있는 코드
+--아래와 같이 제시되어있다. 
+--아래의 SQL구문을 평균 월급이 2800000초과하는 부서를 조회하도록 수정하려고한다.
+--수정해야하는 조건을[원인](30점)에 기술하고, 
+--제시된 코드에 추가하여 [조치내용](30점)에 작성하시오.(60점)
+--
+--SELECT
+--DEPT
+--, SUM(SALARY) 합계
+--, FLOOR(AVG(SALARY)) 평균
+--, COUNT(*) 인원수
+--FROM
+--EMP
+--GROUP BY
+--DEPT
+--ORDER BY DEPT ASC;
+
+--2번문제답
+2번
+-------------------------------------------------------
+--원인
+--평균에 관해서 조건이 필요하므로
+--HAVING FLOOR(AVG(SALARY)) > 2800000 를 추가해야함​
+--조치내용
+--SELECT DEPT, SUM(SALARY) 합계, FLOOR(AVG(SALARY)) 평균, COUNT(*) 인원수
+--FROM EMP
+--
+--GROUP BY DEPT
+--
+--HAVING FLOOR(AVG(SALARY)) > 2800000
+--
+--ORDER BY DEPT ASC;​
 

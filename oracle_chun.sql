@@ -99,3 +99,52 @@ select count(distinct coach_professor_no)
 
 from tb_student ;
 
+--실습문제
+--1.학번 학생명 학과명 조회
+--학과 지정이안된 학생은 존재하지 않는다.
+--이부분 확인과정
+SELECT COUNT(*)
+FROM tb_student
+WHERE DEPARTMENT_NO IS NULL;
+
+--조건 확인되엇으니 이제 원하는 목록을위해 조인후 추출해보자.
+SELECT s.student_no 학번,
+    s.student_name 학생명,
+    d.department_name 학과명
+FROM TB_STUDENT S
+ JOIN tb_department D
+ON s.department_no = d.department_no;
+--  TB_CLASS_PROFESSOR (수업번호, 교수번호에다있다.)
+--2. 수업번호, 수업명 , 교수번호 , 교수명 조회
+SELECT *
+FROM TB_CLASS_PROFESSOR;
+
+SELECT C.class_no 수업번호,
+        C.class_name 수업명,
+        P.professor_no 교수번호,
+        P.professor_name 교수명
+FROM Tb_Class_Professor CP
+join tb_class C
+on CP.class_no =C.class_no
+join tb_professor P
+on p.professor_no=CP.professor_no;
+
+
+--3.송박선 학생의 모든 학기 과목별 점수를조회(학기, 학번 ,학생명, 수업명, 점수)
+select *
+from tb_grade;
+
+select g.term_no 학기,
+--        s.student_no 유징사용은 별칭사용안된다.
+            student_no 학번,
+            s.student_name 학생명,
+            c.class_name 수업명,
+            g.point 학점
+from tb_grade G
+JOIN tb_student S
+USING(student_no)
+JOIN tb_class C
+USING(CLASS_NO)
+WHERE S.STUDENT_NAME ='송박선';
+
+--4.
